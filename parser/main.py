@@ -13,13 +13,14 @@ URL_TEMPLATES = ["https://www.rbc.ru/quote/ticker/69684",
 
 TICKERS = ["YDEX", "GAZP", "SBER", "TATN"]
 
+CHROMEDRIVER_PATH = "C:/Program Files (x86)/chromedriver-win64/chromedriver.exe"
 def fetch_full_page_content(url):
     """Use Selenium to fetch the full content of the given URL by scrolling."""
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
-    service = Service(executable_path="C:/Program Files (x86)/chromedriver-win64/chromedriver.exe")
+    service = Service(executable_path=CHROMEDRIVER_PATH)
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     try:
