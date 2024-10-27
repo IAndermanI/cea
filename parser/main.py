@@ -9,9 +9,18 @@ import time
 URL_TEMPLATES = ["https://www.rbc.ru/quote/ticker/69684",
                  "https://www.rbc.ru/quote/ticker/59256",
                  "https://www.rbc.ru/quote/ticker/59762",
-                 "https://www.rbc.ru/quote/ticker/59825"]
+                 "https://www.rbc.ru/quote/ticker/59825",
+                 "https://www.rbc.ru/quote/ticker/177779",
+                 "https://www.rbc.ru/quote/ticker/338222",
+                 "https://www.rbc.ru/quote/ticker/177756",
+                 "https://www.rbc.ru/quote/ticker/177594",
+                 "https://www.rbc.ru/quote/ticker/177731",
+                 "https://www.rbc.ru/quote/ticker/320508",
+                 "https://www.rbc.ru/quote/ticker/177231",
+                 "https://www.rbc.ru/quote/ticker/177769",
+                 "https://www.rbc.ru/quote/ticker/59342"]
 
-TICKERS = ["YDEX", "GAZP", "SBER", "TATN"]
+TICKERS = ["YDEX", "GAZP", "SBER", "TATN", "TSLA", "WBD", "NOK", "FDX", "INTC", "SONY", "AMZN", "QCOM", "MOEX"]
 
 CHROMEDRIVER_PATH = "C:/Program Files (x86)/chromedriver-win64/chromedriver.exe"
 def fetch_full_page_content(url):
@@ -26,9 +35,10 @@ def fetch_full_page_content(url):
     try:
         driver.get(url)
         time.sleep(5)
-        for _ in range(25):
+        for page_num in range(50):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(2)
+            print(f'Page: {page_num + 1}')
 
         page_content = driver.page_source
         return page_content

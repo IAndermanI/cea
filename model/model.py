@@ -7,6 +7,11 @@ import os
 data = pd.read_csv("data.csv")
 train_texts, val_texts, train_labels, val_labels = train_test_split(data["text"], data["grade"], test_size=0.2)
 
+train_texts = train_texts.fillna("").astype(str)
+val_texts = val_texts.fillna("").astype(str)
+
+
+
 model_path = "local_model/rugpt3large_based_on_gpt2"
 
 if not os.path.exists(model_path):
@@ -20,6 +25,7 @@ else:
     print(f"Model found in path {model_path}.")
     tokenizer = GPT2Tokenizer.from_pretrained(model_path)
     model = GPT2ForSequenceClassification.from_pretrained(model_path, num_labels=5)
+
 train_encodings = tokenizer(train_texts.tolist(), truncation=True, padding=True, max_length=512)
 val_encodings = tokenizer(val_texts.tolist(), truncation=True, padding=True, max_length=512)
 
@@ -39,6 +45,9 @@ class NewsDataset(torch.utils.data.Dataset):
 train_dataset = NewsDataset(train_encodings, train_labels.tolist())
 val_dataset = NewsDataset(val_encodings, val_labels.tolist())
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device)
+model.to(device)
 
 training_args = TrainingArguments(
     output_dir='./results',
