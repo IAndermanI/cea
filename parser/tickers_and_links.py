@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup as bs
 import time
 
 CHROMEDRIVER_PATH = "C:/Program Files (x86)/chromedriver-win64/chromedriver.exe"
-URL = "https://www.rbc.ru/quote/catalog/?type=share&sort=blue_chips"
+URL = "https://www.rbc.ru/quote/catalog/?type=share&sort=leaders"
 
 def fetch_full_page_content(url):
     """Use Selenium to fetch the full content of the given URL by scrolling."""
