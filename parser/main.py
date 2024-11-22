@@ -47,7 +47,7 @@ def fetch_full_page_content(url):
         page_content = driver.page_source
         return page_content
     finally:
-        driver.quit()
+        print("End of  the site")
 
 
 def extract_links(soup):
