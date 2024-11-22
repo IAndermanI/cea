@@ -1,44 +1,48 @@
 import requests
 import csv
+import time
+import json
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup as bs
-import time
+from selenium.webdriver.common.by import By
 
-URL_TEMPLATES = ["https://www.rbc.ru/quote/ticker/69684",
-                 "https://www.rbc.ru/quote/ticker/59256",
-                 "https://www.rbc.ru/quote/ticker/59762",
-                 "https://www.rbc.ru/quote/ticker/59825",
-                 "https://www.rbc.ru/quote/ticker/177779",
-                 "https://www.rbc.ru/quote/ticker/338222",
-                 "https://www.rbc.ru/quote/ticker/177756",
-                 "https://www.rbc.ru/quote/ticker/177594",
-                 "https://www.rbc.ru/quote/ticker/177731",
-                 "https://www.rbc.ru/quote/ticker/320508",
-                 "https://www.rbc.ru/quote/ticker/177231",
-                 "https://www.rbc.ru/quote/ticker/177769",
-                 "https://www.rbc.ru/quote/ticker/59342"]
+URL_TEMPLATES = []
+COMPANY_NAME = []
+TICKERS = []
 
-TICKERS = ["YDEX", "GAZP", "SBER", "TATN", "TSLA", "WBD", "NOK", "FDX", "INTC", "SONY", "AMZN", "QCOM", "MOEX"]
+with open('companies.json', 'r', encoding="utf8") as file:
+    companies = json.load(file)
+
+for company in companies:
+    COMPANY_NAME.append(company)
+    URL_TEMPLATES.append(companies[company])
 
 CHROMEDRIVER_PATH = "C:/Program Files (x86)/chromedriver-win64/chromedriver.exe"
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--window-size=1920,1080")
+service = Service(executable_path=CHROMEDRIVER_PATH)
+driver = webdriver.Chrome(service=service, options=chrome_options)
+
+
 def fetch_full_page_content(url):
     """Use Selenium to fetch the full content of the given URL by scrolling."""
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--window-size=1920,1080")
-    service = Service(executable_path=CHROMEDRIVER_PATH)
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
     try:
         driver.get(url)
+        TICKERS.append(driver.find_elements(By.CLASS_NAME, "chart__info__name-short")[0].text)
         time.sleep(5)
         for page_num in range(50):
+            last_height = driver.execute_script("return document.body.scrollHeight")
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(2)
+            new_height = driver.execute_script("return document.body.scrollHeight")
             print(f'Page: {page_num + 1}')
+            if new_height == last_height:
+                break
 
         page_content = driver.page_source
         return page_content
@@ -72,13 +76,13 @@ def save_to_csv(articles_info, ticker, filename="articles.tsv"):
     with open(filename, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter='\t')
         for link, title, article_text in articles_info:
-            writer.writerow([link, ticker, title, article_text])
+            writer.writerow([ticker[0], ticker[1], title, article_text, link])
 
 
 def main():
     with open('articles.tsv', mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter='\t')
-        writer.writerow(['Ссылка', 'Тикер', 'Заголовок статьи', 'Статья'])
+        writer.writerow(['Name', 'Ticker', 'Title', 'Text', 'Link'])
 
     for i, URL_TEMPLATE in enumerate(URL_TEMPLATES):
         main_page_content = fetch_full_page_content(URL_TEMPLATE)
@@ -86,6 +90,7 @@ def main():
         links = extract_links(main_soup)
 
         articles_info = []
+        company = [COMPANY_NAME[i], TICKERS[i]]
 
         for link in links:
             try:
@@ -98,7 +103,8 @@ def main():
             except Exception as e:
                 print(f"Error fetching {link}: {e}")
 
-        save_to_csv(articles_info, TICKERS[i])
+        save_to_csv(articles_info, company)
+
 
 if __name__ == "__main__":
     main()
