@@ -2,6 +2,7 @@ import requests
 import csv
 import time
 import json
+import unicodedata
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -47,7 +48,7 @@ def fetch_full_page_content(url):
         page_content = driver.page_source
         return page_content
     finally:
-        print("End of  the site")
+        print("End of the site")
 
 
 def extract_links(soup):
@@ -66,12 +67,13 @@ def extract_article_details(soup):
     if title_tag:
         title = title_tag.get_text(strip=True)
     else:
-        title = "Без названия"
-    article_text = " ".join(p.get_text(strip=True) for p in paragraphs)
+        title = "Untitled"
+    article_text = " ".join(p.get_text(" ", strip=True) for p in paragraphs)
+    article_text = unicodedata.normalize('NFKC', article_text)
     return title, article_text
 
 
-def save_to_csv(articles_info, ticker, filename="articles.tsv"):
+def save_to_csv(articles_info, ticker, filename="articles_raw.tsv"):
     """Save the articles information to a CSV file."""
     with open(filename, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter='\t')
@@ -80,7 +82,7 @@ def save_to_csv(articles_info, ticker, filename="articles.tsv"):
 
 
 def main():
-    with open('articles.tsv', mode='a', newline='', encoding='utf-8') as file:
+    with open('articles_raw.tsv', mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter='\t')
         writer.writerow(['Name', 'Ticker', 'Title', 'Text', 'Link'])
 
